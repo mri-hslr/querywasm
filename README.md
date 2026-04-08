@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ QueryWasm — In-Browser SQL Compiler & Visualizer
 
-## Getting Started
+A client-side SQL compiler that transforms queries into logical execution plans and visualizes them in real-time.
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ What This Project Actually Is
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+QueryWasm is not a database.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+It is a compiler pipeline for SQL, built in the browser, that:
+	1.	Tokenizes raw SQL
+	2.	Parses it into an AST
+	3.	Validates it semantically using a schema (Catalog)
+	4.	Converts it into a Logical Execution Plan
+	5.	Visualizes the plan as a graph
 
-## Learn More
+If you don’t understand compilers, this project will expose that very quickly.
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ Core Pipeline
+SQL Query
+   ↓
+Lexer (Tokenizer)
+   ↓
+Parser (AST Generator)
+   ↓
+Semantic Analyzer (Schema Validation)
+   ↓
+Logical Planner (Relational Algebra Tree)
+   ↓
+Plan Visualizer (Graph UI)
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ Tech Stack
+	•	Frontend: Next.js (App Router)
+	•	Language: TypeScript
+	•	Graph Rendering: React Flow
+	•	Styling: Tailwind CSS
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+ Features
+
+ Lexer (Tokenizer)
+	•	Converts raw SQL → structured tokens
+	•	Handles:
+	•	Keywords (SELECT, FROM, etc.)
+	•	Identifiers
+	•	Numbers
+	•	Operators & punctuation
+	•	Implements:
+	•	DFA (state machine)
+	•	Maximal munch
+	•	Keyword normalization
+
+
+
+ Parser (AST Builder)
+	•	Converts tokens → Abstract Syntax Tree
+	•	Supports:
+	•	SELECT
+	•	FROM
+	•	WHERE (binary expressions only)
+
+
+
+ Semantic Analyzer (Validator)
+	•	Validates queries against a schema (Catalog)
+	•	Checks:
+	•	Table existence
+	•	Column existence
+	•	Basic type correctness
+
+
+
+ Catalog (Schema Registry)
+
+Hardcoded virtual database:
+{
+  "users": {
+    "id": "INT",
+    "user_name": "TEXT",
+    "age": "INT",
+    "is_active": "BOOLEAN"
+  },
+  "products": {
+    "id": "INT",
+    "title": "TEXT",
+    "price": "INT"
+  }
+}
+Logical Planner
+	•	Converts AST → Logical Plan Tree
+	•	Operators:
+	•	Scan
+	•	Filter
+	•	Project
+
+
+
+ Plan Visualizer (UI)
+	•	Renders logical plan as a graph
+	•	Real-time updates while typing
+	•	Instant error feedback
+
+
+
+ Demo Behavior
+
+Valid Query
+SELECT id, user_name FROM users WHERE age > 18;
+
+Output:
+Project → Filter → Scan
+
+Semantic Error
+SELECT price FROM users;
+
+Error:
+Column 'price' does not exist in table 'users'
+
+Error:
+Expected Operator, found Semicolon
+
+
+
+
+
+ Getting Started
+
+1. Clone the repo
+
+git clone <your-repo-url>
+cd querywasm
+
+2. Install dependencies
+npm install
+
+3. Run the dev server
+npm run dev 
+
+4. Open in browser
+http://localhost:3000
+
+ How to Test (Do This Properly)
+
+Test 1 — Valid Query
+SELECT title, price FROM products;
+ Should render graph
+Test 2 — Semantic Failure
+SELECT price FROM users;
+
+Should show semantic error
+Test 3 — Syntax Failure
+SELECT id FROM users WHERE age;
+
+Should show parser error
